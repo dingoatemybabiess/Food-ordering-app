@@ -110,4 +110,4 @@ async function initializeDatabase() {
         throw error;
     }
 }
-pool = initializeDatabase();
+module.exports = initializeDatabase;
