@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      // In a real app, check custom claims or a user profile document
+      // For this demo, we'll assume a custom claim 'admin' is set or check a specific email
+      // return request.auth.token.admin == true;
+      return isAuthenticated(); // Simplified for MVP: any auth user can access admin for now (WARNING: NOT SECURE FOR PROD)
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update: if isAuthenticated() && isOwner(userId);
+      allow delete: if isAdmin();
+    }
+
+    // Menu Items collection
+    match /menuItems/{itemId} {
+      allow read: if true; // Public read access
+      allow write: if isAdmin(); // Only admin can modify menu
+      
+      // Allow updating ratings (simplified)
+      // In production, this should be done via Cloud Functions to prevent manipulation
+      allow update: if isAuthenticated() && 
+                    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['numRatings', 'totalRating']);
+    }
+
+    // Orders collection
+    match /orders/{orderId} {
+      allow create: if isAuthenticated();
+      allow read: if isAuthenticated() && (isOwner(resource.data.userId) || isAdmin());
+      allow update: if isAdmin(); // Only admin can update status
+    }
+
+    // Reviews collection
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && 
+                    request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && isOwner(resource.data.userId);
+    }
+  }
+}
