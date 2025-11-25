@@ -15,24 +15,35 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Mount Routes
-app.use("/api/auth", authRoutes);
-app.use("/users", userRoutes);
-app.use("/restaurants", restaurantRoutes);
-app.use("/orders", orderRoutes);
-
 async function startServer() {
   try {
-    const db = await initializeDatabase();
-    app.locals.db = db;
-    console.log("Database connected and attached.");
 
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
+      const db = await initializeDatabase();
+      
+      app.locals.db = db;
+      console.log("Database connected and attached.");
+
+      app.use("/api/auth", authRoutes);
+
+      app.use('/users', userRoutes);
+      
+      app.use('/restaurants', restaurantRoutes);
+
+      app.use('/orders', orderRoutes);
+
+      // 4. Test Route
+      app.get('/', (req, res) => {
+          res.send('Food Service API is running');
+      });
+
+      // 5. Start Server
+      app.listen(PORT, () => {
+          console.log(`Server running on http://localhost:${PORT}`);
+      });
+
   } catch (err) {
-    console.error("Failed to start server:", err);
-    process.exit(1);
+      console.error('Failed to start server:', err.message);
+      process.exit(1);
   }
 }
 
