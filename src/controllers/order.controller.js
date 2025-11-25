@@ -1,5 +1,20 @@
 const db = require('../database/db');
+exports.getOrderHistory = async (req, res) => {
+    try {
+        const userId = req.user.user_id;
+        const db = req.app.locals.db;
 
+        const [orders] = await db.query(
+            `SELECT * FROM orders WHERE user_id = ? ORDER BY order_date DESC`,
+            [userId]
+        );
+
+        res.json(orders);
+    } catch (error) {
+        console.error("Order history error:", error);
+        res.status(500).json({ error: "Error retrieving order history" });
+    }
+};
 async function createOrder(req, res) {
     const connection = await db.getConnection(); 
 
