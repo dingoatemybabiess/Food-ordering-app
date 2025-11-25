@@ -70,7 +70,7 @@ async function createOrder(req, res) {
         console.error('Error placing order:', error);
         res.status(500).json({ error: error.message || 'Failed to place order.' });
 
-    } finally {
+    } finally { 
         connection.release();
     }
 }
