@@ -1,4 +1,4 @@
-const db = require('../config/db');
+const db = require('../database/db');
 
 async function createOrder(req, res) {
     const connection = await db.getConnection(); 
