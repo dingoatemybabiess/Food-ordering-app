@@ -1,5 +1,4 @@
-const db = require('../database/db');
-exports.getOrderHistory = async (req, res) => {
+async function getOrderHistory(req, res){
     try {
         const userId = req.user.user_id;
         const db = req.app.locals.db;
@@ -16,6 +15,7 @@ exports.getOrderHistory = async (req, res) => {
     }
 };
 async function createOrder(req, res) {
+    const db = req.app.locals.db;
     const connection = await db.getConnection(); 
 
     try {
@@ -23,7 +23,22 @@ async function createOrder(req, res) {
         await connection.beginTransaction();
 
 
-        const { userId, items: orderedItems } = req.body;
+        const { userId, locationId: bodyLocationId, items: orderedItems } = req.body;
+
+        let locationId = bodyLocationId;
+
+        if (!locationId) {
+            const [locations] = await connection.query(
+                'SELECT location_id FROM customer_location WHERE user_id = ? ORDER BY location_id LIMIT 1',
+                [userId]
+            );
+
+            if (locations.length === 0) {
+                throw new Error('No location found for this user');
+            }
+
+            locationId = locations[0].location_id;
+        }
 
 
         let totalOrderPrice = 0;
@@ -60,15 +75,15 @@ async function createOrder(req, res) {
         }
 
         const [orderInsertResult] = await connection.query(
-            'INSERT INTO orders (user_id, total_amount, order_status, order_date) VALUES (?, ?, ?, NOW())',
-            [userId, totalOrderPrice, 'pending'] // 'pending' or 'placed' as initial status
+            'INSERT INTO orders (user_id, location_id, total_amount, status, order_date) VALUES (?, ?, ?, ?, NOW())',
+            [userId, locationId, totalOrderPrice, 'Preparing']
         );
 
         const newOrderId = orderInsertResult.insertId;
 
         for (const item of processedItems) {
             await connection.query(
-                'INSERT INTO order_details (order_id, item_id, quantity, price_at_order) VALUES (?, ?, ?, ?)',
+                'INSERT INTO order_details (order_id, item_id, quantity, price) VALUES (?, ?, ?, ?)',
                 [newOrderId, item.itemId, item.quantity, item.priceAtTimeOfOrder]
             );
         }
@@ -90,4 +105,4 @@ async function createOrder(req, res) {
     }
 }
 
-module.exports = { createOrder };
+module.exports = { createOrder,getOrderHistory };

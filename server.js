@@ -8,6 +8,7 @@ const authRoutes = require("./src/routes/auth.routes");
 const userRoutes = require("./src/routes/user.routes");
 const restaurantRoutes = require("./src/routes/restaurant.routes");
 const orderRoutes = require("./src/routes/order.routes");
+const locationRoutes = require("./src/routes/location.routes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,6 +28,8 @@ async function startServer() {
 
       app.use('/users', userRoutes);
       
+      app.use('/locations', locationRoutes);
+
       app.use('/restaurants', restaurantRoutes);
 
       app.use('/orders', orderRoutes);
