@@ -21,7 +21,7 @@ async function createRestaurant(req, res) {
           status || 'open',
           closing_time || null,
           opening_time || null
-      ]);
+      ]); 
       
       res.status(201).json({ 
           message: 'Restaurant created successfully', 
@@ -34,6 +34,7 @@ async function createRestaurant(req, res) {
   }
 }
 
+
 async function getAllRestaurants(req, res) {
   const db = req.app.locals.db;
   try {
@@ -44,4 +45,22 @@ async function getAllRestaurants(req, res) {
   }
 }
 
-module.exports = { createRestaurant, getAllRestaurants };
+async function getRestaurantItems(req, res) {
+    try {
+        const restaurantId = req.params.id;
+        const db = req.app.locals.db;
+
+        const [items] = await db.query(
+            "SELECT * FROM items WHERE restaurant_id = ?",
+            [restaurantId]
+        );
+
+        res.json(items);
+    } catch (err) {
+        console.error("Error fetching items:", err);
+        res.status(500).json({ error: "Failed to fetch items" });
+    }
+};
+
+module.exports = { createRestaurant, getAllRestaurants, getRestaurantItems };
+
