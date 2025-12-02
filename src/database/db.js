@@ -1,8 +1,8 @@
-const mysql = require('mysql2/promise');
+const mysql = require("mysql2/promise");
 
 async function initializeDatabase() {
-    let tempConnection; 
-    const SCHEMA_SQL = `
+  let tempConnection;
+  const SCHEMA_SQL = `
       -- 1. users table
       CREATE TABLE IF NOT EXISTS users (
           user_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -85,29 +85,28 @@ async function initializeDatabase() {
           FOREIGN KEY (restaurant_id) REFERENCES restaurants(restaurant_id)
       );
       `;
-    try {
-        tempConnection = await mysql.createConnection({ 
-            host: 'localhost',
-            user: 'root',
-            password: 'root'
-         });
-        
-        await tempConnection.execute('CREATE DATABASE IF NOT EXISTS Food_Service');
+  try {
+    tempConnection = await mysql.createConnection({
+      host: "localhost",
+      user: "root",
+      password: "1Forgames2006@",
+    });
 
-        await tempConnection.end(); 
+    await tempConnection.execute("CREATE DATABASE IF NOT EXISTS Food_Service");
 
-        const pool = mysql.createPool({ 
-          host: 'localhost',
-          user: 'root',
-          password: 'root',
-          database: 'Food_Service',
-          multipleStatements: true
-         });
-        await pool.query(SCHEMA_SQL);
-        return pool;
+    await tempConnection.end();
 
-    } catch (error) {
-        throw error;
-    }
+    const pool = mysql.createPool({
+      host: "localhost",
+      user: "root",
+      password: "1Forgames2006@",
+      database: "Food_Service",
+      multipleStatements: true,
+    });
+    await pool.query(SCHEMA_SQL);
+    return pool;
+  } catch (error) {
+    throw error;
+  }
 }
 module.exports = initializeDatabase;
